@@ -7,16 +7,13 @@ from langchain_google_vertexai import VertexAIEmbeddings
 from google.oauth2 import service_account
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
-
 # Set the name of the page
 st.set_page_config(
     page_title="Sugestão de Habilidades da BNCC",
     page_icon="📚")
 
-# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = st.secrets["connections"]["gcs"]
-
 if st.secrets["connections"]["gcs"]:
-    creds_dict = st.secrets["connections"]["gcs"]  # or ["google"]
+    creds_dict = st.secrets["connections"]["gcs"]
     credentials = service_account.Credentials.from_service_account_info(creds_dict)
 
 @st.cache_resource
@@ -166,6 +163,7 @@ if resultados:
         pre_selected_rows=[],
     )
     gb.configure_column("Habilidade", wrapText=True, autoHeight=True)
+    gb.configure_column("Código", headerCheckboxSelection=True)
     gb.configure_grid_options(domLayout='autoHeight')
 
     grid_options = gb.build()
@@ -181,15 +179,20 @@ if resultados:
 
     selecionados_df = pd.DataFrame(grid_response["selected_rows"])
 
-    if not selecionados_df.empty:
+    if selecionados_df.empty:
+        st.info("Selecione ao menos uma linha da tabela para copiar os códigos.")
+        if st.button("🚫 Nenhuma habilidade corresponde"):
+            st.info("Sinalizado: nenhuma habilidade sugerida era adequada. Pedimos desculpas pelo transtorno e usaremos essa indicação para melhorar nossas predições.")
+    else:
         codigos = ", ".join(selecionados_df["Código"])
         habilidades = "; ".join(f"{row['Código']} - {row['Habilidade']}" for _, row in selecionados_df.iterrows())
 
-        st.markdown("### Copiar seleção")
-        col1, col2 = st.columns(2)
-        with col1:
-            st.code(codigos, language="text", wrap_lines=True)
-        with col2:
-            st.code(habilidades, language="text", wrap_lines=True)
-    else:
-        st.info("Selecione ao menos uma linha da tabela para copiar os códigos.")
+        if st.button("✅ Confirmar seleção"):
+            st.success(f"{len(selecionados_df)} habilidade(s) selecionada(s).")  # placeholder
+
+            st.markdown("### Copiar seleção")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.code(codigos, language="text", wrap_lines=True)
+            with col2:
+                st.code(habilidades, language="text", wrap_lines=True)
