@@ -1,13 +1,18 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 import streamlit as st
 import pandas as pd
-from app.vectorstore.loader import load_embeddings, load_vector_store
-from app.vectorstore.search import search_bncc
-from app.utils.session import init_session_state
-from app.ui.filters import render_filtros
-from app.ui.input_box import render_input_box
-from app.ui.results_table import render_results_table
-from app.ui.copy_actions import render_copy_actions, render_no_result_feedback, render_feedback_thanks, render_bad_result_feedback
-from app.utils.logger import init_connection
+from vectorstore.loader import load_embeddings, load_vector_store
+from vectorstore.search import search_bncc
+from utils.session import init_session_state
+from ui.filters import render_filtros
+from ui.input_box import render_input_box
+from ui.results_table import render_results_table
+from ui.copy_actions import render_copy_actions, render_no_result_feedback, render_feedback_thanks, render_bad_result_feedback
+
+from utils.logger import init_connection
 
 st.set_page_config(page_title="Sugestão de Habilidades da BNCC", page_icon="📚")
 
