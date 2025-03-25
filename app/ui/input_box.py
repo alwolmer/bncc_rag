@@ -13,10 +13,6 @@ def render_input_box():
         st.session_state["resultados"] = []
         st.session_state["limpar"] = False
         st.rerun()  # força nova renderização segura
-    
-    if st.session_state["update_busca"]:
-        st.session_state["update_busca"] = False
-        # st.rerun()
 
     # Renderiza campo de texto
     st.subheader("Plano de aula")

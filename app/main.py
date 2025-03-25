@@ -41,7 +41,8 @@ buscar, limpar = render_input_box()
 # Busca habilidades
 # if st.session_state["update_busca"]:
 plano = st.session_state["plano"].strip()
-if plano:
+if plano and st.session_state["update_busca"]:
+    st.session_state["update_busca"] = False
     st.session_state["resultados"] = search_bncc(
         st.session_state["vector_store"],
         plano,
