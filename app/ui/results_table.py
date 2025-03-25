@@ -3,6 +3,14 @@ import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 def render_results_table(resultados):
+    if not resultados:
+        return pd.DataFrame()  # Retorna vazio, mas evita erro
+
+    df_resultados = pd.DataFrame(resultados)
+
+    if df_resultados.empty:
+        return pd.DataFrame()
+
     df_resultados = pd.DataFrame(resultados)
     st.subheader("Resultados encontrados")
 

@@ -1,6 +1,7 @@
 import streamlit as st
 import json
 from supabase import create_client, Client
+from config import LOGS_TABLE
 
 @st.cache_resource
 def init_connection():
@@ -9,17 +10,25 @@ def init_connection():
     return create_client(url, key)
 
 
-def log_event(evento, plano, filtros=None, resultados=None):
+def stringify(obj):
+    return ', '.join([str(i) for i in obj])
+
+def log_event(evento: str):
     try:
         conn = st.session_state["db_conn"]
 
-        conn.table("logs").insert({
+        response = conn.table(LOGS_TABLE).insert({
             "evento": evento,
-            "plano": plano,
-            "filtros": filtros if filtros else None,
-            "resultados": resultados if resultados else None
+            "plano": st.session_state["plano"],
+            "nivel": "fundamental" if not st.session_state["ensino_medio"] else "médio",
+            "filtro_ano": stringify(st.session_state['filtros']['anos']) if st.session_state['filtros']['anos'] else None,
+            "filtro_componente": stringify(st.session_state['filtros']['componentes']) if st.session_state['filtros']['componentes'] else None,
+            "resultados": stringify(st.session_state["codigos_resultados"]) if st.session_state["codigos_resultados"] else None,
+            "selecionados": stringify(st.session_state["selecionados"]) if st.session_state["selecionados"] else None
+
         }).execute()
 
-        print("✅ Log registrado com sucesso.")
+        # print("✅ Log registrado com sucesso.")
     except Exception as e:
-        print(" Erro ao inserir log:", e)
+        print("Erro com log")
+        print("Erro ao inserir log:", e)

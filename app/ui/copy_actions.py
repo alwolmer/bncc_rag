@@ -9,12 +9,7 @@ def render_copy_actions(selecionados_df):
     if st.button("✅ Confirmar seleção"):
         st.success(f"{len(selecionados_df)} habilidade(s) selecionada(s).")
 
-        log_event(
-            evento="sucesso",
-            plano=st.session_state["plano"],
-            filtros=st.session_state["filtros"],
-            resultados=st.session_state["codigos_resultados"]
-        )
+        log_event("sucesso")
         
         st.markdown("### Copiar seleção")
         col1, col2 = st.columns(2)
@@ -25,22 +20,24 @@ def render_copy_actions(selecionados_df):
     else:
         st.info("Confirme a seleção para copiar códigos e habilidades.")
 
-def render_feedback_button(result: bool):
+def set_feedback_enviado():
+    st.session_state["feedback_enviado"] = True
+
+def set_irrelevant_feedback():
+    log_event("resultado_irrelevante")
+    set_feedback_enviado()
+
+def set_no_result_feedback():
+    log_event("sem_resultado")
+    set_feedback_enviado()
+
+def render_feedback_thanks():
+    st.info("Obrigado pelo feedback. Pedimos desculpas pelo transtorno e usaremos essa indicação para melhorar nossas predições.")
+
+def render_no_result_feedback():
+    st.info("É importante para nós saber se você não encontrou o que procurava. Se tem certeza da sua busca e não encontrou resultados, clique no botão abaixo.")
+    st.button("🚫 Nenhuma habilidade encontrada", on_click=set_no_result_feedback)
+   
+def render_bad_result_feedback():
     st.info("É importante para nós saber se você não encontrou o que procurava. Se tem certeza da sua busca e não encontrou resultados relevantes, clique no botão abaixo.")
-    if st.button("🚫 Nenhuma habilidade corresponde"):
-        if result:
-            log_event(
-                evento="resultado_inadequado",
-                plano=st.session_state["plano"],
-                filtros=st.session_state["filtros"],
-                resultados=st.session_state["codigos_resultados"]
-            )
-            st.info("Sinalizado: nenhuma habilidade entre as sugeridas era relevante. Pedimos desculpas pelo transtorno e usaremos essa indicação para melhorar nossas predições.")
-        else:
-            log_event(
-                evento="sem_resultado",
-                plano=st.session_state["plano"],
-                filtros=st.session_state["filtros"],
-                resultados=st.session_state["codigos_resultados"]
-            )
-            st.info("Sinalizado: a busca não retornou resultados. Pedimos desculpas pelo transtorno e usaremos essa indicação para melhorar nossas predições.")
+    st.button("🚫 Nenhuma habilidade relevante", on_click=set_irrelevant_feedback)

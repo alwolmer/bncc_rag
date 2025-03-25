@@ -12,6 +12,7 @@ def render_input_box():
         st.session_state["plano"] = ""
         st.session_state["resultados"] = []
         st.session_state["limpar"] = False
+        st.session_state["feedback_enviado"] = False
         st.rerun()  # força nova renderização segura
 
     # Renderiza campo de texto
@@ -20,8 +21,6 @@ def render_input_box():
 
     col1, col2 = st.columns([1, 1])
     with col1:
-        buscar = st.button("🔍 Buscar habilidades", on_click=lambda: st.session_state.update({"update_busca": True}))
+        st.button("🔍 Buscar habilidades", on_click=lambda: st.session_state.update({"update_busca": True}))
     with col2:
-        limpar = st.button("🧹 Limpar texto", on_click=lambda: st.session_state.update({"limpar": True}))
-
-    return buscar, limpar
+        st.button("🧹 Limpar texto", on_click=lambda: st.session_state.update({"limpar": True}))
