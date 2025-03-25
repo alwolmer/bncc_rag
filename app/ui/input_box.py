@@ -5,7 +5,6 @@ from utils.session import init_session_state
 
 def render_input_box():
     # Inicializa session_state com segurança
-    init_session_state("plano", "")
     init_session_state("limpar", False)
 
     # Verifica se é para limpar
@@ -14,6 +13,10 @@ def render_input_box():
         st.session_state["resultados"] = []
         st.session_state["limpar"] = False
         st.rerun()  # força nova renderização segura
+    
+    if st.session_state["update_busca"]:
+        st.session_state["update_busca"] = False
+        # st.rerun()
 
     # Renderiza campo de texto
     st.subheader("Plano de aula")
@@ -21,7 +24,7 @@ def render_input_box():
 
     col1, col2 = st.columns([1, 1])
     with col1:
-        buscar = st.button("🔍 Buscar habilidades")
+        buscar = st.button("🔍 Buscar habilidades", on_click=lambda: st.session_state.update({"update_busca": True}))
     with col2:
         limpar = st.button("🧹 Limpar texto", on_click=lambda: st.session_state.update({"limpar": True}))
 

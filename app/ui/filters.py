@@ -6,4 +6,7 @@ def render_filtros(anos, componentes):
         filtro_componentes = st.multiselect("Componentes curriculares:", componentes)
     with col2:
         filtro_anos = st.multiselect("Anos:", anos)
-    return filtro_componentes, filtro_anos
+    
+    if st.session_state["update_busca"]:
+        st.session_state["filtros"]["componentes"] = filtro_componentes
+        st.session_state["filtros"]["anos"] = filtro_anos
