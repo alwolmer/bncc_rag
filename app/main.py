@@ -12,17 +12,22 @@ from ui.input_box import render_input_box
 from ui.results_table import render_results_table
 from ui.copy_actions import render_copy_actions, render_no_result_feedback, render_feedback_thanks, render_bad_result_feedback
 
-from utils.logger import init_connection
+from utils.logger import init_connection, log_access
 
 st.set_page_config(page_title="Sugestão de Habilidades da BNCC", page_icon="📚")
+
+init_session_state("access_logged", False)
+
+# Inicializa conexão com o banco de dados para log
+init_session_state("db_conn", init_connection())
 
 # Inicializa o FAISS
 init_session_state("embeddings", load_embeddings())
 init_session_state("vector_store_fund", load_vector_store('fund'))
 init_session_state("vector_store_em", load_vector_store('em'))
 
-# Inicializa conexão com o banco de dados para log
-init_session_state("db_conn", init_connection())
+if not st.session_state["access_logged"]:
+    log_access()
 
 # Inicializa estado
 init_session_state("plano", "")

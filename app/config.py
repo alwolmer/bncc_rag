@@ -8,6 +8,7 @@ FUND_BUCKET = st.secrets["project"]["fund_bucket"]
 EM_BUCKET = st.secrets["project"]["em_bucket"]
 LOAD_LOCAL = st.secrets["settings"].get("load_local", False)
 LOGS_TABLE = st.secrets["settings"]["logs_table"]
+ACCESS_TABLE = st.secrets["settings"]["access_table"]
 
 # Carrega credenciais do GCS/Vertex
 if st.secrets["connections"]["gcs"]:
