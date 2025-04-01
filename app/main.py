@@ -6,50 +6,34 @@ import streamlit as st
 import pandas as pd
 from vectorstore.loader import load_embeddings, load_vector_store
 from vectorstore.search import search_bncc
-from utils.session import init_session_state
+from utils.session_state import init_all_state, clear_search, update_search_filters
 from ui.filters import render_filtros
 from ui.input_box import render_input_box
 from ui.results_table import render_results_table
 from ui.copy_actions import render_copy_actions, render_no_result_feedback, render_feedback_thanks, render_bad_result_feedback
-
 from utils.logger import init_connection, log_access
 
 st.set_page_config(page_title="Sugestão de Habilidades da BNCC", page_icon="📚")
 
-init_session_state("access_logged", False)
+# Initialize all session state
+init_all_state()
 
-# Inicializa conexão com o banco de dados para log
-init_session_state("db_conn", init_connection())
+# Initialize application resources
+st.session_state["db_conn"] = init_connection()
+st.session_state["embeddings"] = load_embeddings()
+st.session_state["vector_store_fund"] = load_vector_store('fund')
+st.session_state["vector_store_em"] = load_vector_store('em')
 
-# Inicializa o FAISS
-init_session_state("embeddings", load_embeddings())
-init_session_state("vector_store_fund", load_vector_store('fund'))
-init_session_state("vector_store_em", load_vector_store('em'))
-
+# Log access if not already logged
 if not st.session_state["access_logged"]:
     log_access()
 
-# Inicializa estado
-init_session_state("plano", "")
-init_session_state("resultados", [])
-init_session_state("codigos_resultados", [])
-
-init_session_state("ensino_medio", False)
-init_session_state("filtros", {})
-
-init_session_state("update_busca", False)
-init_session_state("feedback_enviado", False)
-
-init_session_state("selecionados", [])
-
-init_session_state("selecionados_df", pd.DataFrame())
-
-# Renderiza filtros e entrada do plano
+# Render UI components
 st.title("Sugestão de Habilidades da BNCC")
 render_filtros()
 render_input_box()
 
-# Busca habilidades
+# Handle search
 plano = st.session_state["plano"].strip()
 if plano and st.session_state["update_busca"]:
     st.session_state.update({"update_busca": False, "feedback_enviado": False})
@@ -70,6 +54,7 @@ if plano and st.session_state["update_busca"]:
 elif not plano:
     st.warning("Digite um plano de aula antes de buscar.")
 
+# Handle results display
 if st.session_state["resultados"]:
     st.session_state["selecionados_df"] = render_results_table(st.session_state["resultados"])
     if not st.session_state["selecionados_df"].empty and not st.session_state["feedback_enviado"]:
@@ -77,13 +62,6 @@ if st.session_state["resultados"]:
         render_copy_actions(st.session_state["selecionados_df"])
     elif not st.session_state["feedback_enviado"]:
         render_bad_result_feedback()
-# elif not st.session_state["feedback_enviado"]:
-#     render_no_result_feedback()
 
 if st.session_state["feedback_enviado"]:
     render_feedback_thanks()
-
-# if (not st.session_state["selecionados"]) or st.session_state["feedback_enviado"]:
-#     render_feedback_button()
-# else:
-#     render_copy_actions(st.session_state["selecionados_df"])

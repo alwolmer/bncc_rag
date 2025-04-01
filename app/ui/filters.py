@@ -1,4 +1,5 @@
 import streamlit as st
+from utils.session_state import update_search_filters
 
 def render_filtros():
     fund_em = st.radio("Nível de ensino:", ["Fundamental", "Médio"])
@@ -17,6 +18,8 @@ def render_filtros():
         filtro_anos = st.multiselect("Anos:", anos)
     
     if st.session_state["update_busca"]:
-        st.session_state["filtros"]["componentes"] = filtro_componentes
-        st.session_state["filtros"]["anos"] = filtro_anos
-        st.session_state["ensino_medio"] = fund_em == "Médio"
+        update_search_filters(
+            componentes=filtro_componentes,
+            anos=filtro_anos,
+            ensino_medio=fund_em == "Médio"
+        )

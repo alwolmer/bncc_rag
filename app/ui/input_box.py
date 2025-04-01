@@ -1,18 +1,13 @@
 # input_box.py
 
 import streamlit as st
-from utils.session import init_session_state
+from utils.session_state import clear_search
 
 def render_input_box():
-    # Inicializa session_state com segurança
-    init_session_state("limpar", False)
-
     # Verifica se é para limpar
     if st.session_state["limpar"]:
-        st.session_state["plano"] = ""
-        st.session_state["resultados"] = []
+        clear_search()
         st.session_state["limpar"] = False
-        st.session_state["feedback_enviado"] = False
         st.rerun()  # força nova renderização segura
 
     # Renderiza campo de texto
