@@ -14,8 +14,10 @@ def render_input_box():
     st.subheader("Plano de aula")
     st.text_area("Digite seu plano de aula:", key="plano")
 
-    col1, col2 = st.columns([1, 1])
+    col1, col2, col3 = st.columns([1, 1, 1])
     with col1:
         st.button("🔍 Buscar habilidades", on_click=lambda: st.session_state.update({"update_busca": True}))
     with col2:
         st.button("🧹 Limpar texto", on_click=lambda: st.session_state.update({"limpar": True}))
+    with col3:
+        st.button("🤖 Tratar plano com IA", on_click=lambda: st.session_state.update({"update_busca": True, "tratar_com_ia": True}))

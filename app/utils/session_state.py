@@ -18,6 +18,8 @@ def init_app_state() -> None:
     init_session_state("embeddings", None)
     init_session_state("vector_store_fund", None)
     init_session_state("vector_store_em", None)
+    init_session_state("retriever_fund", None)
+    init_session_state("retriever_em", None)
 
 # Search State
 def init_search_state() -> None:
