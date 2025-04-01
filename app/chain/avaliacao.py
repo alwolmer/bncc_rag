@@ -32,18 +32,39 @@ llm = load_llm()
 class SubtopicoEstrutura(BaseModel):
     presente: bool = Field(..., description="Se o sub-tópico está presente ou não no plano")
     adequado: bool = Field(..., description="Se o sub-tópico está adequado ou não no plano")
-    identificacao: Optional[str] = Field(..., description="Identificação do que foi encontrado no plano acerca do sub-tópico")
-    sugestao_melhoria: Optional[str] = Field(None, description="Sugestão de melhoria, se aplicável")
+    identificacao: str = Field(default="", description="Identificação do que foi encontrado no plano acerca do sub-tópico. Use uma string vazia se não foi identificado.")
+    sugestao_melhoria: str = Field(default="", description="Sugestão de melhoria, se aplicável. Use uma string vazia se não houver sugestões.")
 
 class AvaliacaoPlano(BaseModel):
     codigos_bncc: List[str] = Field(..., description="Códigos da BNCC selecionados")
-    objetivos: SubtopicoEstrutura = Field(..., description="Avaliação dos objetivos")
-    conteudos: SubtopicoEstrutura = Field(..., description="Avaliação dos conteúdos")
-    metodologia: SubtopicoEstrutura = Field(..., description="Avaliação da metodologia")
-    avaliacao: SubtopicoEstrutura = Field(..., description="Avaliação da avaliação")
-    recursos: SubtopicoEstrutura = Field(..., description="Avaliação dos recursos")
-    materiais: SubtopicoEstrutura = Field(..., description="Avaliação dos materiais")
-    tempo: SubtopicoEstrutura = Field(..., description="Avaliação do tempo")
+    objetivos_presente: bool = Field(..., description="Se os objetivos estão presentes no plano")
+    objetivos_adequado: bool = Field(..., description="Se os objetivos estão adequados no plano")
+    objetivos_identificacao: str = Field(default="", description="Identificação dos objetivos encontrados no plano. Use uma string vazia se não foi identificado.")
+    objetivos_sugestao_melhoria: str = Field(default="", description="Sugestão de melhoria para os objetivos. Use uma string vazia se não houver sugestões.")
+    conteudos_presente: bool = Field(..., description="Se os conteúdos estão presentes no plano")
+    conteudos_adequado: bool = Field(..., description="Se os conteúdos estão adequados no plano")
+    conteudos_identificacao: str = Field(default="", description="Identificação dos conteúdos encontrados no plano. Use uma string vazia se não foi identificado.")
+    conteudos_sugestao_melhoria: str = Field(default="", description="Sugestão de melhoria para os conteúdos. Use uma string vazia se não houver sugestões.")
+    metodologia_presente: bool = Field(..., description="Se a metodologia está presente no plano")
+    metodologia_adequado: bool = Field(..., description="Se a metodologia está adequada no plano")
+    metodologia_identificacao: str = Field(default="", description="Identificação da metodologia encontrada no plano. Use uma string vazia se não foi identificado.")
+    metodologia_sugestao_melhoria: str = Field(default="", description="Sugestão de melhoria para a metodologia. Use uma string vazia se não houver sugestões.")
+    avaliacao_presente: bool = Field(..., description="Se a avaliação está presente no plano")
+    avaliacao_adequado: bool = Field(..., description="Se a avaliação está adequada no plano")
+    avaliacao_identificacao: str = Field(default="", description="Identificação da avaliação encontrada no plano. Use uma string vazia se não foi identificado.")
+    avaliacao_sugestao_melhoria: str = Field(default="", description="Sugestão de melhoria para a avaliação. Use uma string vazia se não houver sugestões.")
+    recursos_presente: bool = Field(..., description="Se os recursos estão presentes no plano")
+    recursos_adequado: bool = Field(..., description="Se os recursos estão adequados no plano")
+    recursos_identificacao: str = Field(default="", description="Identificação dos recursos encontrados no plano. Use uma string vazia se não foi identificado.")
+    recursos_sugestao_melhoria: str = Field(default="", description="Sugestão de melhoria para os recursos. Use uma string vazia se não houver sugestões.")
+    materiais_presente: bool = Field(..., description="Se os materiais estão presentes no plano")
+    materiais_adequado: bool = Field(..., description="Se os materiais estão adequados no plano")
+    materiais_identificacao: str = Field(default="", description="Identificação dos materiais encontrados no plano. Use uma string vazia se não foi identificado.")
+    materiais_sugestao_melhoria: str = Field(default="", description="Sugestão de melhoria para os materiais. Use uma string vazia se não houver sugestões.")
+    tempo_presente: bool = Field(..., description="Se o tempo está presente no plano")
+    tempo_adequado: bool = Field(..., description="Se o tempo está adequado no plano")
+    tempo_identificacao: str = Field(default="", description="Identificação do tempo encontrado no plano. Use uma string vazia se não foi identificado.")
+    tempo_sugestao_melhoria: str = Field(default="", description="Sugestão de melhoria para o tempo. Use uma string vazia se não houver sugestões.")
 
 avaliacao_parser = PydanticOutputParser(pydantic_object=AvaliacaoPlano)
 
@@ -192,15 +213,9 @@ Envolve a duração total da aula e/ou o tempo estimado para cada etapa. Também
 **Exemplos inadequados:**
 - Atividades listadas sem ordem ou referência temporal.
 - Apenas menção genérica à "duração da aula".
-- Ausência total de referência ao tempo.1
+- Ausência total de referência ao tempo.
 
----
-
-
-
-Retorne exclusivamente no seguinte formato JSON:
-
-{format_instructions}""")
+Retorne a avaliação no formato especificado.""")
 ])
 
 # # --- Função auxiliar para formatar habilidades ---
@@ -209,28 +224,72 @@ Retorne exclusivamente no seguinte formato JSON:
 
 # --- Função de avaliação final ---
 def avaliar_plano_avaliacao_final_fn(state: dict) -> dict:
-    avaliar_chain = (
-        {
-            "plano": lambda x: x["plano"],
-            "habilidades_bncc": lambda x: x["habilidades_bncc"],
-            "componentes": lambda x: x["componentes"],
-            "ano": lambda x: x["ano"],
-            "etapa": lambda x: x["etapa"],
-            "format_instructions": lambda _: avaliacao_parser.get_format_instructions()
-        }
-        | avaliar_prompt
-        | llm
-        | avaliacao_parser
-    )
-    parsed = avaliar_chain.invoke(state)
+    # Create the chain with the parser
+    chain = avaliar_prompt | llm.with_structured_output(AvaliacaoPlano)
+    
+    # Run the chain
+    parsed = chain.invoke({
+        "plano": state["plano"],
+        "habilidades_bncc": state["habilidades_bncc"],
+        "componentes": state["componentes"],
+        "ano": state["ano"],
+        "etapa": state["etapa"]
+    })
 
-    parsed = {
-        **parsed.model_dump()
+    # Convert the parsed model to a dict
+    parsed_dict = parsed.model_dump()
+    
+    # Add the habilidades_bncc list
+    parsed_dict["habilidades_bncc"] = list(set([f"{hab['Código']} - {hab['Habilidade']}" for hab in state["habilidades_bncc"] if hab["Código"] in parsed_dict['codigos_bncc']]))
+
+    # Restructure the output to match the expected format
+    avaliacao_estrutura = {
+        "habilidades_bncc": parsed_dict["habilidades_bncc"],
+        "objetivos": {
+            "presente": parsed_dict["objetivos_presente"],
+            "adequado": parsed_dict["objetivos_adequado"],
+            "identificacao": parsed_dict["objetivos_identificacao"],
+            "sugestao_melhoria": parsed_dict["objetivos_sugestao_melhoria"]
+        },
+        "conteudos": {
+            "presente": parsed_dict["conteudos_presente"],
+            "adequado": parsed_dict["conteudos_adequado"],
+            "identificacao": parsed_dict["conteudos_identificacao"],
+            "sugestao_melhoria": parsed_dict["conteudos_sugestao_melhoria"]
+        },
+        "metodologia": {
+            "presente": parsed_dict["metodologia_presente"],
+            "adequado": parsed_dict["metodologia_adequado"],
+            "identificacao": parsed_dict["metodologia_identificacao"],
+            "sugestao_melhoria": parsed_dict["metodologia_sugestao_melhoria"]
+        },
+        "avaliacao": {
+            "presente": parsed_dict["avaliacao_presente"],
+            "adequado": parsed_dict["avaliacao_adequado"],
+            "identificacao": parsed_dict["avaliacao_identificacao"],
+            "sugestao_melhoria": parsed_dict["avaliacao_sugestao_melhoria"]
+        },
+        "recursos": {
+            "presente": parsed_dict["recursos_presente"],
+            "adequado": parsed_dict["recursos_adequado"],
+            "identificacao": parsed_dict["recursos_identificacao"],
+            "sugestao_melhoria": parsed_dict["recursos_sugestao_melhoria"]
+        },
+        "materiais": {
+            "presente": parsed_dict["materiais_presente"],
+            "adequado": parsed_dict["materiais_adequado"],
+            "identificacao": parsed_dict["materiais_identificacao"],
+            "sugestao_melhoria": parsed_dict["materiais_sugestao_melhoria"]
+        },
+        "tempo": {
+            "presente": parsed_dict["tempo_presente"],
+            "adequado": parsed_dict["tempo_adequado"],
+            "identificacao": parsed_dict["tempo_identificacao"],
+            "sugestao_melhoria": parsed_dict["tempo_sugestao_melhoria"]
+        }
     }
 
-    state["habilidades_bncc"] = list(set([f"{hab['Código']} - {hab['Habilidade']}" for hab in state["habilidades_bncc"] if hab["Código"] in parsed['codigos_bncc']]))
-
-    return {**state, "avaliacao_estrutura": parsed}
+    return {**state, "avaliacao_estrutura": avaliacao_estrutura}
 
 avaliar_plano_chain = RunnableLambda(avaliar_plano_avaliacao_final_fn)
 
@@ -277,8 +336,8 @@ avaliar_plano_chain = RunnableLambda(avaliar_plano_avaliacao_final_fn)
     #     i. Se o plano contém algo que corresponda a esse item, explicitamente ou implicitamente (uma resposta de sim ou não).
     #     ii. Se o que você identificou foi adequado (uma resposta de sim ou não).
     #         - Só responda sim se o item foi identificado (explícita ou implicitamente) e não houver sugestões de melhoria para esse item.
-    #         - Se houver qualquer sugestão de melhoria (mesmo pequena), a resposta deve ser “não”.
-    #         - Para os itens marcados como não obrigatórios (“Recursos” e “Materiais”), é permitido responder sim mesmo que estejam ausentes, desde que você julgue que não fazem falta neste plano específico.
-    #         - Para os demais itens, se estiverem ausentes, a resposta deve ser “não”.
+    #         - Se houver qualquer sugestão de melhoria (mesmo pequena), a resposta deve ser "não".
+    #         - Para os itens marcados como não obrigatórios ("Recursos" e "Materiais"), é permitido responder sim mesmo que estejam ausentes, desde que você julgue que não fazem falta neste plano específico.
+    #         - Para os demais itens, se estiverem ausentes, a resposta deve ser "não".
     #     iii. O que você identificou no plano que corresponde àquele item. Explicite o que estiver implícito, mas seja sucinto e enumerativo, não faça comentários longos ou genéricos. Só descreva o que foi identificado, não faça sugestões de melhorias. Não escreva nada aqui caso o item não tenha sido identificado.
     #     iv. Caso identifique omissões, pontos fracos, confusão ou ambiguidade, sugira melhorias objetivas. Seja sucinto e enumerativo, não faça comentários longos ou genéricos. Não descreva novamente o que foi identificado, apenas faça sugestões de melhorias. Não escreva nada aqui caso o item esteja plenamente adequado.

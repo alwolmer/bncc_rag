@@ -3,6 +3,9 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import streamlit as st
+
+st.set_page_config(page_title="Sugestão de Habilidades da BNCC", page_icon="📚")
+
 import pandas as pd
 from vectorstore.loader import load_embeddings, load_vector_store, load_retriever
 from vectorstore.search import search_bncc
@@ -14,7 +17,7 @@ from ui.copy_actions import render_copy_actions, render_no_result_feedback, rend
 from utils.logger import init_connection, log_access
 from chain.graph import create_chain_graph, run_chain
 
-st.set_page_config(page_title="Sugestão de Habilidades da BNCC", page_icon="📚")
+
 
 # Initialize all session state
 init_all_state()
@@ -92,7 +95,7 @@ if st.session_state.get("tratar_com_ia", False):
                         st.success("Plano analisado com sucesso!")
                         
                         # Display avaliação results
-                        st.subheader("# Avaliação do Plano")
+                        st.markdown("# Avaliação do Plano")
 
                         st.markdown("## **Habilidades selecionadas**")
                         st.code(
@@ -100,6 +103,7 @@ if st.session_state.get("tratar_com_ia", False):
                             language="text",
                             wrap_lines=True
                         )
+
                         
                         # Helper function to render subtopic
                         def render_subtopic(title: str, data: dict):
@@ -110,7 +114,7 @@ if st.session_state.get("tratar_com_ia", False):
                                     language="text",
                                     wrap_lines=True
                                 )
-                            elif not data["presente"] and not data["adequado"]:
+                            elif not data["adequado"]:
                                 st.error("❌ Não identificado no plano")
                             else:
                                 st.success("✅ Não identificado no plano, mas adequado")
