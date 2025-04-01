@@ -54,6 +54,10 @@ langchain-community==0.3.20
 langchain-core==0.3.47
 langchain-google-vertexai==2.0.16
 langchain-text-splitters==0.3.7
+langgraph==0.3.21
+langgraph-checkpoint==2.0.23
+langgraph-prebuilt==0.1.7
+langgraph-sdk==0.1.60
 langsmith==0.3.18
 MarkupSafe==3.0.2
 marshmallow==3.26.1
@@ -63,6 +67,7 @@ narwhals==1.31.0
 numpy==2.2.4
 oauthlib==3.2.2
 orjson==3.10.15
+ormsgpack==1.9.1
 packaging==24.2
 pandas==2.2.3
 pillow==11.1.0
@@ -115,5 +120,6 @@ urllib3==2.3.0
 user-agents==2.2.0
 watchdog==6.0.0
 websockets==14.2
+xxhash==3.5.0
 yarl==1.18.3
 zstandard==0.23.0
